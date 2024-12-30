@@ -33,9 +33,9 @@ jobs:
         pip install dvc
 
     # Pull model and data from DVC remote storage
-    - name: Pull model and data from DVC remote storage
-      run: |
-        dvc pull  # This will download the latest model version
+    # - name: Pull model and data from DVC remote storage
+    #   run: |
+    #     dvc pull  # This will download the latest model version
 
     # Check if params.yaml has changed and run dvc repro to retrain the model if needed
     - name: Reproduce the model with DVC
