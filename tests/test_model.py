@@ -15,7 +15,7 @@ def test_model_accuracy():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
     # Load the pre-trained model
-    model = joblib.load('models/iris_model.pkl')  # Path to your saved model
+    model = joblib.load('models/iris_model.pkl')
     
     # Test model accuracy (you can improve this test by validating a specific result)
     accuracy = model.score(X_test, y_test)
