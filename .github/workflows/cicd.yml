@@ -32,26 +32,48 @@ jobs:
         pip install -r requirements.txt
         pip install dvc
 
-
-    # Pull model and data from DVC remote storage
-    - name: Pull model and data from DVC remote storage
+    - name: Run pipeline
       env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-east-1  # Replace with your region
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: us-east-1  # Replace with your AWS region
       run: |
-        dvc pull  # This will download the latest model version
+        dvc repro
 
-
-    # Check if params.yaml has changed and run dvc repro to retrain the model if needed
-    - name: Reproduce the model with DVC
+    - name: Push DVC-tracked data to remote
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: us-east-1  # Replace with your AWS region
       run: |
-        dvc repro  # DVC will retrain the model if any change is detected in params.yaml or dataset
+        dvc push
+
+    - name: Configure Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Add changes to Git
+      run: |
+        git add .
+
+    - name: Commit changes
+      if: ${{ github.actor != 'github-actions[bot]' }}
+      run: |
+        git commit -m "Automated commit of DVC outputs and updated code" || echo "No changes to commit"
+
+    - name: Push changes
+      if: ${{ github.actor != 'github-actions[bot]' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      run: |
+        git push origin ${{ github.ref_name }}
+
 
     # Run tests to validate the model
-    # - name: Run tests
-    #   run: |
-    #     pytest tests/  # Run the tests from the 'tests' folder
+    - name: Run tests
+      run: |
+        pytest tests/  # Run the tests from the 'tests' folder
 
     # Build Docker image
     # - name: Build Docker image
@@ -70,26 +92,26 @@ jobs:
     #     docker push $AZURE_REGISTRY_NAME.azurecr.io/fastapi-ml-app:latest  # Push the Docker image
 
     # Set up Azure credentials and connect to AKS
-    - name: Set up Azure credentials and connect to AKS
-      env:
-        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      run: |
-        # Login to Azure using Service Principal credentials
-        echo "${AZURE_CLIENT_SECRET}" | az login --service-principal --username "${AZURE_CLIENT_ID}" --password "${AZURE_CLIENT_SECRET}" --tenant "${AZURE_TENANT_ID}"
+#     - name: Set up Azure credentials and connect to AKS
+#       env:
+#         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+#         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+#         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+#         AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+#       run: |
+#         # Login to Azure using Service Principal credentials
+#         echo "${AZURE_CLIENT_SECRET}" | az login --service-principal --username "${AZURE_CLIENT_ID}" --password "${AZURE_CLIENT_SECRET}" --tenant "${AZURE_TENANT_ID}"
         
-        # Set the subscription
-        az account set --subscription "${AZURE_SUBSCRIPTION_ID}"
+#         # Set the subscription
+#         az account set --subscription "${AZURE_SUBSCRIPTION_ID}"
         
-        # Get AKS credentials to configure kubectl
-        az aks get-credentials --resource-group neeraj --name mlops --overwrite-existing
+#         # Get AKS credentials to configure kubectl
+#         az aks get-credentials --resource-group neeraj --name mlops --overwrite-existing
 
     
-# Deploy to Azure Kubernetes Service (AKS)
-    - name: Deploy to Azure Kubernetes Service (AKS)
-      run: |
-        # Apply the Kubernetes deployment configuration from k8s/deployment.yaml
-        kubectl apply -f k8s/deployment.yaml  
+# # Deploy to Azure Kubernetes Service (AKS)
+#     - name: Deploy to Azure Kubernetes Service (AKS)
+#       run: |
+#         # Apply the Kubernetes deployment configuration from k8s/deployment.yaml
+#         kubectl apply -f k8s/deployment.yaml  
         
