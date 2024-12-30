@@ -41,6 +41,7 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1  # Replace with your region
       run: |
         dvc pull  # This will download the latest model version
+        ls models/ 
 
     # Check if params.yaml has changed and run dvc repro to retrain the model if needed
     - name: Reproduce the model with DVC
