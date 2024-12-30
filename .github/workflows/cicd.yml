@@ -1,0 +1,82 @@
+name: CI/CD Pipeline
+
+  
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ci_cd_pipeline:
+    runs-on: ubuntu-latest
+    
+    steps:
+    
+    # Checkout the repository
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Set up Python environment
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    # Install dependencies
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install dvc
+
+    # Pull model and data from DVC remote storage
+    - name: Pull model and data from DVC remote storage
+      run: |
+        dvc pull  # This will download the latest model version
+
+    # Check if params.yaml has changed and run dvc repro to retrain the model if needed
+    - name: Reproduce the model with DVC
+      run: |
+        dvc repro  # DVC will retrain the model if any change is detected in params.yaml or dataset
+
+    # Run tests to validate the model
+    - name: Run tests
+      run: |
+        pytest tests/  # Run the tests from the 'tests' folder
+
+    # Build Docker image
+    - name: Build Docker image
+      run: |
+        docker build -t fastapi-ml-app .  # Build the Docker image
+
+    # Push Docker image to Azure Container Registry (ACR)
+    - name: Push Docker image to Azure Container Registry (ACR)
+      env:
+        AZURE_REGISTRY_NAME: ${{ secrets.AZURE_REGISTRY_NAME }}
+        AZURE_REGISTRY_PASSWORD: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
+        AZURE_REGISTRY_USERNAME: ${{ secrets.AZURE_REGISTRY_USERNAME }}
+      run: |
+        echo $AZURE_REGISTRY_PASSWORD | docker login $AZURE_REGISTRY_NAME.azurecr.io --username $AZURE_REGISTRY_USERNAME --password-stdin
+        docker tag fastapi-ml-app:latest $AZURE_REGISTRY_NAME.azurecr.io/fastapi-ml-app:latest
+        docker push $AZURE_REGISTRY_NAME.azurecr.io/fastapi-ml-app:latest  # Push the Docker image
+
+    # Deploy to Azure Kubernetes Service (AKS) without rolling update
+    # - name: Deploy to Azure Kubernetes Service (AKS)
+    #   env:
+    #     AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}  # Azure credentials stored in GitHub Secrets
+    #   run: |
+    #     # Login to Azure
+    #     echo "${AZURE_CREDENTIALS}" | az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+        
+    #     # Set AKS credentials
+    #     az aks get-credentials --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name ${{ secrets.AZURE_AKS_CLUSTER_NAME }}
+        
+    #     # Set new Docker image in the Kubernetes Deployment
+    #     kubectl set image deployment/fastapi-ml-app fastapi-ml-app=$AZURE_REGISTRY_NAME.azurecr.io/fastapi-ml-app:latest --record
+        
+    #     # Force re-deploy by scaling down and up
+    #     kubectl scale deployment fastapi-ml-app --replicas=0
+    #     kubectl scale deployment fastapi-ml-app --replicas=3
