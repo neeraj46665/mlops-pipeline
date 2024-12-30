@@ -5,6 +5,7 @@ prepare:
 featureize:
   input_path: "data/processed/iris_processed.csv"
   output_path: "data/featureized/iris_featureized.csv"
+  scaler_output_path: "models/scaler.pkl"
 
 train:
   input_path: "data/featureized/iris_featureized.csv"

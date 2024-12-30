@@ -6,6 +6,9 @@ stages:
       - data/iris.csv
     outs:
       - data/processed/iris_processed.csv
+    params:
+      - prepare.data_path
+      - prepare.output_path
 
   featureize:
     cmd: python src/featureize.py
@@ -14,6 +17,9 @@ stages:
       - data/processed/iris_processed.csv
     outs:
       - data/featureized/iris_featureized.csv
+    params:
+      - featureize.input_path
+      - featureize.output_path
 
   train:
     cmd: python src/train.py
@@ -22,6 +28,13 @@ stages:
       - data/featureized/iris_featureized.csv
     outs:
       - models/iris_model.pkl
+    params:
+      - train.input_path
+      - train.model_output
+      - train.test_size
+      - train.random_state
+      - train.max_depth
+      - train.n_estimators
 
   evaluate:
     cmd: python src/evaluate.py
@@ -29,3 +42,6 @@ stages:
       - src/evaluate.py
       - models/iris_model.pkl
       - data/featureized/iris_featureized.csv
+    params:
+      - evaluate.model_path
+      - evaluate.test_data_path

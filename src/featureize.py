@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import yaml
 from sklearn.preprocessing import StandardScaler
+import joblib
 
 def load_params():
     with open('params.yaml', 'r') as f:
@@ -12,6 +13,7 @@ def featureize_data():
     params = load_params()
     input_path = params['featureize']['input_path']
     output_path = params['featureize']['output_path']
+    scaler_output_path = params['featureize']['scaler_output_path']
     
     # Load the processed data
     df = pd.read_csv(input_path)
@@ -31,7 +33,9 @@ def featureize_data():
     
     # Save the featureized data
     df_scaled.to_csv(output_path, index=False)
+    joblib.dump(scaler, scaler_output_path)
     print(f"Data featureized and saved to '{output_path}'")
+    print(f"Scaler saved to '{scaler_output_path}'")
 
 if __name__ == "__main__":
     featureize_data()
