@@ -5,12 +5,12 @@ stages:
     deps:
     - path: data/iris.csv
       hash: md5
-      md5: 21d441a28bce4417276097df955afc50
-      size: 2928
+      md5: 4d301abed5efe50eccda350cde38e0eb
+      size: 2777
     - path: src/prepare.py
       hash: md5
-      md5: 953d171fe99b6dfe39768026302e2b21
-      size: 772
+      md5: 407d0b0def712966c22807dcd0a608cf
+      size: 743
     params:
       params.yaml:
         prepare.data_path: data/iris.csv
@@ -18,19 +18,19 @@ stages:
     outs:
     - path: data/processed/iris_processed.csv
       hash: md5
-      md5: 81b864fc2dc82d29a62f43a010105d8b
-      size: 2928
+      md5: a981a29c3052cbdba91078b01780f08c
+      size: 2777
   featureize:
     cmd: python src/featureize.py
     deps:
     - path: data/processed/iris_processed.csv
       hash: md5
-      md5: 81b864fc2dc82d29a62f43a010105d8b
-      size: 2928
+      md5: a981a29c3052cbdba91078b01780f08c
+      size: 2777
     - path: src/featureize.py
       hash: md5
-      md5: a3d84beebd90182f1ed40866d220f066
-      size: 1220
+      md5: f07cb83fb6fbdd8b9d3e1cb8456fb141
+      size: 1179
     params:
       params.yaml:
         featureize.input_path: data/processed/iris_processed.csv
@@ -38,19 +38,19 @@ stages:
     outs:
     - path: data/featureized/iris_featureized.csv
       hash: md5
-      md5: f464cae0925c551e714a5ebd0cf3c280
-      size: 12249
+      md5: 07adaa89c3cf4f620ff91fb4ea6169a6
+      size: 12098
   train:
     cmd: python src/train.py
     deps:
     - path: data/featureized/iris_featureized.csv
       hash: md5
-      md5: f464cae0925c551e714a5ebd0cf3c280
-      size: 12249
+      md5: 07adaa89c3cf4f620ff91fb4ea6169a6
+      size: 12098
     - path: src/train.py
       hash: md5
-      md5: eda9506a52481a2838d2efaf89a37081
-      size: 2292
+      md5: 556485632ad70aed9363100e896529c8
+      size: 2069
     params:
       params.yaml:
         train.input_path: data/featureized/iris_featureized.csv
@@ -62,23 +62,23 @@ stages:
     outs:
     - path: models/iris_model.pkl
       hash: md5
-      md5: a2835f7e84a448b1154a8d74bf3c7880
-      size: 2657
+      md5: 4a44958f6b5e70334579c37a4fdbba23
+      size: 2865
   evaluate:
     cmd: python src/evaluate.py
     deps:
     - path: data/featureized/iris_featureized.csv
       hash: md5
-      md5: f464cae0925c551e714a5ebd0cf3c280
-      size: 12249
+      md5: 07adaa89c3cf4f620ff91fb4ea6169a6
+      size: 12098
     - path: models/iris_model.pkl
       hash: md5
-      md5: a2835f7e84a448b1154a8d74bf3c7880
-      size: 2657
+      md5: 4a44958f6b5e70334579c37a4fdbba23
+      size: 2865
     - path: src/evaluate.py
       hash: md5
-      md5: cf3695cf2ad0e70b81619890fe531ed1
-      size: 791
+      md5: cf4da036271900b8615a16214a61067f
+      size: 759
     params:
       params.yaml:
         evaluate.model_path: models/iris_model.pkl
