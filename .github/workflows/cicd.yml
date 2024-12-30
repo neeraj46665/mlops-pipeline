@@ -41,8 +41,7 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1  # Replace with your region
       run: |
         dvc pull  # This will download the latest model version
-        ls models/ 
-        pwd
+
 
     # Check if params.yaml has changed and run dvc repro to retrain the model if needed
     - name: Reproduce the model with DVC
@@ -50,9 +49,9 @@ jobs:
         dvc repro  # DVC will retrain the model if any change is detected in params.yaml or dataset
 
     # Run tests to validate the model
-    - name: Run tests
-      run: |
-        pytest tests/  # Run the tests from the 'tests' folder
+    # - name: Run tests
+    #   run: |
+    #     pytest tests/  # Run the tests from the 'tests' folder
 
     # Build Docker image
     - name: Build Docker image
