@@ -42,6 +42,7 @@ jobs:
       run: |
         dvc pull  # This will download the latest model version
         ls models/ 
+        pwd
 
     # Check if params.yaml has changed and run dvc repro to retrain the model if needed
     - name: Reproduce the model with DVC
