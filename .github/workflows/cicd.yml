@@ -39,6 +39,7 @@ jobs:
         AWS_DEFAULT_REGION: us-east-1  # Replace with your AWS region
       run: |
         dvc repro
+        pytest tests/
 
     - name: Push DVC-tracked data to remote
       env:
@@ -71,9 +72,9 @@ jobs:
 
 
     # Run tests to validate the model
-    - name: Run tests
-      run: |
-        pytest tests/  # Run the tests from the 'tests' folder
+    # - name: Run tests
+    #   run: |
+    #     pytest tests/  # Run the tests from the 'tests' folder
 
     # Build Docker image
     # - name: Build Docker image
