@@ -1,0 +1,19 @@
+prepare:
+  data_path: "data/iris.csv"
+  output_path: "data/processed/iris_processed.csv"
+
+featureize:
+  input_path: "data/processed/iris_processed.csv"
+  output_path: "data/featureized/iris_featureized.csv"
+
+train:
+  input_path: "data/featureized/iris_featureized.csv"
+  model_output: "models/iris_model.pkl"
+  test_size: 0.2
+  random_state: 42
+  max_depth: 5
+  n_estimators: 100
+
+evaluate:
+  model_path: "models/iris_model.pkl"
+  test_data_path: "data/featureized/iris_featureized.csv"
