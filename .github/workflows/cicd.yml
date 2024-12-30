@@ -86,12 +86,10 @@ jobs:
         # Get AKS credentials to configure kubectl
         az aks get-credentials --resource-group neeraj --name mlops --overwrite-existing
 
-    # Deploy to Azure Kubernetes Service (AKS) without rolling update
+    
+# Deploy to Azure Kubernetes Service (AKS)
     - name: Deploy to Azure Kubernetes Service (AKS)
       run: |
-        # Set new Docker image in the Kubernetes Deployment
-        kubectl set image deployment/fastapi-ml-app fastapi-ml-app=$AZURE_REGISTRY_NAME.azurecr.io/fastapi-ml-app:latest --record
+        # Apply the Kubernetes deployment configuration from k8s/deployment.yaml
+        kubectl apply -f k8s/deployment.yaml  
         
-        # Force re-deploy by scaling down and up
-        kubectl scale deployment fastapi-ml-app --replicas=0
-        kubectl scale deployment fastapi-ml-app --replicas=3
