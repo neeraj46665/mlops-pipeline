@@ -65,9 +65,9 @@ jobs:
     - name: Push changes
       if: ${{ github.actor != 'github-actions[bot]' }}
       env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
-        git push origin ${{ github.ref_name }}
+        git push https://$GH_TOKEN@github.com/${{ github.repository }} ${{ github.ref_name }}
 
 
     # Run tests to validate the model
