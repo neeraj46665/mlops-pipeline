@@ -7,7 +7,7 @@ from sklearn.tree import DecisionTreeClassifier
 # Test function to load the model and check its accuracy
 def test_model_accuracy():
     # Load the dataset
-    df = pd.read_csv('data\iris.csv')
+    df = pd.read_csv('data/iris.csv')
     X = df.iloc[:, :-1]  # Features
     y = df.iloc[:, -1]   # Target
     
@@ -15,7 +15,7 @@ def test_model_accuracy():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
     # Load the pre-trained model
-    model = joblib.load('models\iris_model.pkl')  # Path to your saved model
+    model = joblib.load('models/iris_model.pkl')  # Path to your saved model
     
     # Test model accuracy (you can improve this test by validating a specific result)
     accuracy = model.score(X_test, y_test)
