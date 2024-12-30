@@ -34,10 +34,10 @@ def train_model():
 
     # Set up the hyperparameters grid for GridSearchCV
     param_grid = {
-        'max_depth': [None, 10, 20, 30],  # Depth of the tree
-        'min_samples_split': [2, 5, 10],  # Minimum number of samples required to split a node
-        'min_samples_leaf': [1, 2, 4],    # Minimum number of samples required at a leaf node
-        'max_features': ['auto', 'sqrt', 'log2'],  # Number of features to consider for splitting a node
+        'max_depth': [None, 10, 20, 30],
+        'min_samples_split': [2, 5, 10],
+        'min_samples_leaf': [1, 2, 4],
+        'max_features': ['sqrt', 'log2', None],  # Updated to valid values
     }
 
     # Perform GridSearchCV with cross-validation
