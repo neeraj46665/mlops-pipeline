@@ -18,7 +18,8 @@ spec:
       - name: fastapi-ml-app
         image: mlops.azurecr.io/fastapi-ml-app:latest
         ports:
-        - containerPort: 80
+        - containerPort: 8000  # Use port 8000 as in the Dockerfile
+
 ---
 apiVersion: v1
 kind: Service
@@ -29,6 +30,6 @@ spec:
     app: fastapi-ml-app
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 80
+      port: 80  # Exposing port 80 externally
+      targetPort: 8000  # Map to the container's port 8000
   type: LoadBalancer
