@@ -59,3 +59,17 @@ def predict(iris: IrisRequest):
         return PredictionResponse(species=species)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+
+
+@app.get("/health")
+def health_check():
+    """
+    Health check endpoint to verify the application and model status.
+    """
+    try:
+        # Perform a dummy operation to ensure the model is loaded
+        _ = model.predict(scaler.transform([[0, 0, 0, 0]]))
+        return {"status": "Healthy", "message": "API and model are operational."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Health check failed: {str(e)}")
+
