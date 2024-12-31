@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-ml-app
+  labels:
+    app: fastapi-ml-app
+spec:
+  replicas: 2  # You can adjust the number of replicas as needed
+  selector:
+    matchLabels:
+      app: fastapi-ml-app
+  template:
+    metadata:
+      labels:
+        app: fastapi-ml-app
+    spec:
+      containers:
+      - name: fastapi-ml-app
+        image: mlops.azurecr.io/fastapi-ml-app:latest
+        ports:
+        - containerPort: 8000  # Use port 8000 as in the Dockerfile
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-ml-app-service
+spec:
+  selector:
+    app: fastapi-ml-app
+  ports:
+    - protocol: TCP
+      port: 80  # Exposing port 80 externally
+      targetPort: 8000  # Map to the container's port 8000
+  type: LoadBalancer
