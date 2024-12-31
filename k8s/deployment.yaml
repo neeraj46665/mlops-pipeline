@@ -5,7 +5,7 @@ metadata:
   labels:
     app: fastapi-ml-app
 spec:
-  replicas: 2  # You can adjust the number of replicas as needed
+  replicas: 2  # Number of replicas for scaling
   selector:
     matchLabels:
       app: fastapi-ml-app
@@ -18,7 +18,24 @@ spec:
       - name: fastapi-ml-app
         image: mlops.azurecr.io/fastapi-ml-app:latest
         ports:
-        - containerPort: 8000  # Use port 8000 as in the Dockerfile
+        - containerPort: 8000  # Expose container's port 8000
+        readinessProbe:  # Ensure the pod is ready to receive traffic
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 3  # Wait time before the first check
+          periodSeconds: 5  # Check readiness every 5 seconds
+        livenessProbe:  # Ensure the pod is running correctly
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10  # Wait time before the first check
+          periodSeconds: 10  # Check liveness every 10 seconds
+  strategy:
+    type: RollingUpdate  # Rolling update strategy for zero-downtime deployment
+    rollingUpdate:
+      maxSurge: 1  # Allow 1 extra pod to be created during update
+      maxUnavailable: 1  # Ensure only 1 pod is unavailable during update
 
 ---
 apiVersion: v1
@@ -30,6 +47,6 @@ spec:
     app: fastapi-ml-app
   ports:
     - protocol: TCP
-      port: 80  # Exposing port 80 externally
+      port: 80  # Expose port 80 externally
       targetPort: 8000  # Map to the container's port 8000
   type: LoadBalancer
