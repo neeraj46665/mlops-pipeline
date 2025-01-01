@@ -86,6 +86,11 @@ jobs:
       run: |
         docker build -t fastapi-ml-app .  # Build the Docker image
 
+    - name: Security scan
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: fastapi-ml-app:latest
+
     # Push Docker image to Azure Container Registry (ACR)
     - name: Push Docker image to Azure Container Registry (ACR)
       env:
@@ -96,6 +101,8 @@ jobs:
         echo $AZURE_REGISTRY_PASSWORD | docker login $AZURE_REGISTRY_NAME.azurecr.io --username $AZURE_REGISTRY_USERNAME --password-stdin
         docker tag fastapi-ml-app:latest $AZURE_REGISTRY_NAME.azurecr.io/fastapi-ml-app:latest
         docker push $AZURE_REGISTRY_NAME.azurecr.io/fastapi-ml-app:latest  # Push the Docker image
+
+
 
     # Set up Azure credentials and connect to AKS
 #     - name: Set up Azure credentials and connect to AKS
