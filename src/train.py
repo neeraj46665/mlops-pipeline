@@ -2,15 +2,24 @@ import pandas as pd
 import os
 import yaml
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.tree import DecisionTreeClassifier  # Import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score
 import joblib
+import mlflow
+import mlflow.sklearn
 
 # Load parameters from YAML file
 def load_params():
     with open('params.yaml', 'r') as f:
         params = yaml.safe_load(f)
     return params
+
+params = load_params()
+# Read MLflow tracking URI and other registration parameters
+tracking_uri = params["register"]["tracking_uri"]
+mlflow.set_tracking_uri(tracking_uri)
+
+
 
 # Train the model with improved code
 def train_model():
@@ -54,10 +63,25 @@ def train_model():
     accuracy = accuracy_score(y_test, y_pred)
     print(f"Test Accuracy: {accuracy:.4f}")
     
-    # Save the best model
+    # Log the model using MLflow
+    mlflow.start_run()  # Start a new MLflow run
+    mlflow.sklearn.log_model(best_model, "model")  # Log the model as an artifact
+
+    # Optionally log parameters and metrics
+    mlflow.log_param("max_depth", grid_search.best_params_["max_depth"])
+    mlflow.log_param("min_samples_split", grid_search.best_params_["min_samples_split"])
+    mlflow.log_metric("accuracy", accuracy)
+    
+    # Save the model to disk (optional, for local use as well)
     os.makedirs(os.path.dirname(model_output), exist_ok=True)
     joblib.dump(best_model, model_output)
     print(f"Model trained and saved to '{model_output}'")
+
+    run_id = mlflow.active_run().info.run_id
+    print(f"Model logged with Run ID: {run_id}")
+    # Save the run_id to a YAML file
+    with open('run_id.yaml', 'w') as f:
+        yaml.dump({"run_id": run_id}, f)
 
 if __name__ == "__main__":
     train_model()

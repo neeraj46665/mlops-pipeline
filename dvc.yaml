@@ -28,6 +28,7 @@ stages:
       - data/featureized/iris_featureized.csv
     outs:
       - models/iris_model.pkl
+      - run_id.yaml  # This file will contain the run_id
     params:
       - train.input_path
       - train.model_output
@@ -45,3 +46,13 @@ stages:
     params:
       - evaluate.model_path
       - evaluate.test_data_path
+
+  register:
+    cmd: python src/register_model.py
+    deps:
+      - src/register_model.py
+      - models/iris_model.pkl
+      - run_id.yaml  
+    params:
+      - register.model_name
+      - register.stage

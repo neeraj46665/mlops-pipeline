@@ -18,3 +18,8 @@ train:
 evaluate:
   model_path: "models/iris_model.pkl"
   test_data_path: "data/featureized/iris_featureized.csv"
+
+register:
+  tracking_uri: "http://20.193.158.178:5000/"
+  model_name: "iris_classification_model"
+  stage: "Staging"
