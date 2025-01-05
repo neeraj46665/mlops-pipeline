@@ -66,13 +66,8 @@ stages:
       size: 2497
     - path: run_id.yaml
       hash: md5
-<<<<<<< HEAD
       md5: c70d0ef9eadd6c7636f9070f18a9e771
       size: 42
-=======
-      md5: 5753865ad500cc39bed0d1ad55774dde
-      size: 41
->>>>>>> 82fd8e74d0e8070fe00f2ab174b88b06d1328db6
   evaluate:
     cmd: python src/evaluate.py
     deps:
