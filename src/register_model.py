@@ -22,7 +22,7 @@ run_id = load_run_id()
 
 # Register the model
 model_name = params["register"]["model_name"]
-stage = params["register"]["stage"]
+stage = params["register"]["staging_stage"]
 
 model_uri = f"runs:/{run_id}/model"
 

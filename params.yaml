@@ -10,7 +10,7 @@ featureize:
 train:
   input_path: "data/featureized/iris_featureized.csv"
   model_output: "models/iris_model.pkl"
-  test_size: 0.2
+  test_size: 0.1
   random_state: 42
   max_depth: 5
   n_estimators: 100
@@ -22,4 +22,5 @@ evaluate:
 register:
   tracking_uri: "http://20.193.158.178:5000/"
   model_name: "iris_classification_model"
-  stage: "Staging"
+  staging_stage: "staging"
+  production_stage: "production"

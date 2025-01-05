@@ -7,6 +7,7 @@ from sklearn.metrics import accuracy_score
 import joblib
 import mlflow
 import mlflow.sklearn
+from mlflow.models.signature import infer_signature
 
 # Load parameters from YAML file
 def load_params():
@@ -15,11 +16,10 @@ def load_params():
     return params
 
 params = load_params()
+
 # Read MLflow tracking URI and other registration parameters
 tracking_uri = params["register"]["tracking_uri"]
 mlflow.set_tracking_uri(tracking_uri)
-
-
 
 # Train the model with improved code
 def train_model():
@@ -65,7 +65,12 @@ def train_model():
     
     # Log the model using MLflow
     mlflow.start_run()  # Start a new MLflow run
-    mlflow.sklearn.log_model(best_model, "model")  # Log the model as an artifact
+
+    # Infer the model signature
+    signature = infer_signature(X_train, best_model.predict(X_train))
+
+    # Log the model with the inferred signature
+    mlflow.sklearn.log_model(best_model, "model", signature=signature)
 
     # Optionally log parameters and metrics
     mlflow.log_param("max_depth", grid_search.best_params_["max_depth"])
@@ -79,6 +84,7 @@ def train_model():
 
     run_id = mlflow.active_run().info.run_id
     print(f"Model logged with Run ID: {run_id}")
+
     # Save the run_id to a YAML file
     with open('run_id.yaml', 'w') as f:
         yaml.dump({"run_id": run_id}, f)

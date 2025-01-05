@@ -55,4 +55,5 @@ stages:
       - run_id.yaml  
     params:
       - register.model_name
-      - register.stage
+      - register.staging_stage
+      - register.production_stage

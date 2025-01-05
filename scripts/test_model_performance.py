@@ -1,22 +1,38 @@
 import mlflow
 import yaml
 import joblib
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-import numpy as np
 import pandas as pd
+import pytest
+
+import warnings
+
+warnings.filterwarnings("ignore")
+
+# Helper function to load parameters
+def load_params():
+    with open("params.yaml", "r") as f:
+        return yaml.safe_load(f)
+
+# Helper function to load run_id
+def load_run_id():
+    with open("run_id.yaml", "r") as f:
+        data = yaml.safe_load(f)
+    return data["run_id"]
 
 def test_model_performance():
     # Load params.yaml
-    with open("params.yaml", "r") as f:
-        params = yaml.safe_load(f)
+    params = load_params()
+    tracking_uri = params["register"]["tracking_uri"]
+    mlflow.set_tracking_uri(tracking_uri)
+
+    # Get run_id and model details
+    run_id = load_run_id()
+    model_uri = f"runs:/{run_id}/model"
 
     # Get model URI and scaler path from params.yaml
-    tracking_uri = params["register"]["tracking_uri"]
-    model_uri = params["register"]["model_uri"]
     scaler_path = params["featureize"]["scaler_output_path"]
-
-    # Set MLflow tracking URI
-    mlflow.set_tracking_uri(tracking_uri)
 
     # Load the model
     model = mlflow.pyfunc.load_model(model_uri)
@@ -25,25 +41,26 @@ def test_model_performance():
     scaler = joblib.load(scaler_path)
 
     # Create dummy data and corresponding dummy labels
-    dummy_data = pd.DataFrame({
-        "sepal_length": np.random.uniform(4.3, 7.9, size=50),
-        "sepal_width": np.random.uniform(2.0, 4.4, size=50),
-        "petal_length": np.random.uniform(1.0, 6.9, size=50),
-        "petal_width": np.random.uniform(0.1, 2.5, size=50)
-    })
-    dummy_labels = np.random.choice([0, 1, 2], size=50)  # 3 classes for the Iris dataset
+    df = pd.read_csv(r'data/iris.csv')  # Use raw string or forward slashes
+    X = df.iloc[:, :-1]  # Features
+    y = df.iloc[:, -1]   # Target
+    
+    # Split the dataset into training and testing sets (same split used for training the model)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     # Scale the dummy data
-    scaled_data = scaler.transform(dummy_data)
+    X_test_scaled = scaler.transform(X_test)
 
-    # Make predictions
-    predictions = model.predict(scaled_data)
+    # Ensure correct column names for the input
+    X_test_scaled_df = pd.DataFrame(X_test_scaled, columns=['sepal length (cm)', 'sepal width (cm)', 'petal length (cm)', 'petal width (cm)'])
 
-    # Calculate performance metrics
-    accuracy = accuracy_score(dummy_labels, predictions)
-    precision = precision_score(dummy_labels, predictions, average="weighted")
-    recall = recall_score(dummy_labels, predictions, average="weighted")
-    f1 = f1_score(dummy_labels, predictions, average="weighted")
+    # Test model accuracy
+    predictions = model.predict(X_test_scaled_df)
+
+    accuracy = accuracy_score(y_test, predictions)
+    precision = precision_score(y_test, predictions, average="weighted")
+    recall = recall_score(y_test, predictions, average="weighted")
+    f1 = f1_score(y_test, predictions, average="weighted")
 
     # Define expected thresholds for the performance metrics
     expected_accuracy = 0.40

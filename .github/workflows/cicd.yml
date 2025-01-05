@@ -72,6 +72,9 @@ jobs:
 
 
     # Run tests to validate the model
+
+
+        
     - name: Run tests
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -80,6 +83,23 @@ jobs:
       run: |
         dvc repro
         pytest tests/ 
+
+    - name: Run Model Loading testing
+      run: |
+        pytest scripts/test_load_model.py
+
+    - name: Run Model Signature testing
+      run: |
+        pytest scripts/test_model_signature.py
+
+    - name: Run Model Performance testing
+      run: |
+        pytest scripts/test_model_performance.py
+
+    - name: Promote Model To Production
+      run: |
+        python scripts/promote_production.py
+      
 
     # Build Docker image
     - name: Build Docker image

@@ -49,8 +49,8 @@ stages:
       size: 12249
     - path: src/train.py
       hash: md5
-      md5: fee76069a71e23148538b2f8d6b3851a
-      size: 3004
+      md5: 10be7a160e9b2b52d3db4b438415ed06
+      size: 3203
     params:
       params.yaml:
         train.input_path: data/featureized/iris_featureized.csv
@@ -58,15 +58,15 @@ stages:
         train.model_output: models/iris_model.pkl
         train.n_estimators: 100
         train.random_state: 42
-        train.test_size: 0.2
+        train.test_size: 0.1
     outs:
     - path: models/iris_model.pkl
       hash: md5
-      md5: ee576d39fa0686ae5b04c82974116865
-      size: 2657
+      md5: 370f0590bf2a39a4b6b27c3c0e7389a5
+      size: 2497
     - path: run_id.yaml
       hash: md5
-      md5: 798f1c16b837fbd226befeb6a903d46f
+      md5: b6336cca266c7a504f339e486c5828ec
       size: 42
   evaluate:
     cmd: python src/evaluate.py
@@ -77,8 +77,8 @@ stages:
       size: 12249
     - path: models/iris_model.pkl
       hash: md5
-      md5: ee576d39fa0686ae5b04c82974116865
-      size: 2657
+      md5: 370f0590bf2a39a4b6b27c3c0e7389a5
+      size: 2497
     - path: src/evaluate.py
       hash: md5
       md5: cf3695cf2ad0e70b81619890fe531ed1
@@ -92,17 +92,18 @@ stages:
     deps:
     - path: models/iris_model.pkl
       hash: md5
-      md5: ee576d39fa0686ae5b04c82974116865
-      size: 2657
+      md5: 370f0590bf2a39a4b6b27c3c0e7389a5
+      size: 2497
     - path: run_id.yaml
       hash: md5
-      md5: 798f1c16b837fbd226befeb6a903d46f
+      md5: b6336cca266c7a504f339e486c5828ec
       size: 42
     - path: src/register_model.py
       hash: md5
-      md5: a8a76694c8ad3fc8894fc62e94e9dc18
-      size: 1025
+      md5: f4fa8e7606a42b996d2f1c1dac8ec63d
+      size: 1033
     params:
       params.yaml:
         register.model_name: iris_classification_model
-        register.stage: Staging
+        register.production_stage: production
+        register.staging_stage: staging

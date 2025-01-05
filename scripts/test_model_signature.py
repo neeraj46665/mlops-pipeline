@@ -1,61 +1,85 @@
+import pytest
 import mlflow
 import yaml
 import pandas as pd
 import numpy as np
 import joblib
 
-def test_model_signature():
-    # Load params.yaml
+import warnings
+
+# Suppress specific deprecation warnings
+warnings.filterwarnings("ignore")
+
+
+# Helper function to load parameters
+def load_params():
     with open("params.yaml", "r") as f:
-        params = yaml.safe_load(f)
+        return yaml.safe_load(f)
 
-    # Get model URI and scaler path from params.yaml
+
+# Helper function to load run_id
+def load_run_id():
+    with open("run_id.yaml", "r") as f:
+        data = yaml.safe_load(f)
+    return data["run_id"]
+
+
+# Pytest fixture for setting up the model and scaler
+@pytest.fixture(scope="module")
+def setup_model_and_scaler():
+    """Setup model and scaler for tests."""
+    params = load_params()
     tracking_uri = params["register"]["tracking_uri"]
-    model_uri = params["register"]["model_uri"]
-    scaler_path = params["featureize"]["scaler_output_path"]
-
-    # Set MLflow tracking URI
     mlflow.set_tracking_uri(tracking_uri)
 
-    # Load the model
+    # Get run_id and model details
+    run_id = load_run_id()
+    model_uri = f"runs:/{run_id}/model"
     model = mlflow.pyfunc.load_model(model_uri)
 
     # Load the scaler
+    scaler_path = "models/scaler.pkl"
     scaler = joblib.load(scaler_path)
 
-    # Create dummy data for the Iris dataset
-    dummy_data = pd.DataFrame({
-        "sepal_length": np.random.uniform(4.3, 7.9, size=5),
-        "sepal_width": np.random.uniform(2.0, 4.4, size=5),
-        "petal_length": np.random.uniform(1.0, 6.9, size=5),
-        "petal_width": np.random.uniform(0.1, 2.5, size=5)
+    return model, scaler
+
+
+def test_model_signature(setup_model_and_scaler):
+    """Test that the model signature matches expected schema."""
+    model, _ = setup_model_and_scaler
+
+    signature = model.metadata.signature
+    assert signature is not None, "Model signature is not defined."
+
+    # Validate input columns
+    expected_inputs = signature.inputs
+    actual_columns = ["sepal length (cm)", "sepal width (cm)", "petal length (cm)", "petal width (cm)"]
+    assert len(expected_inputs) == len(actual_columns), "Input column count mismatch."
+    for col in expected_inputs:
+        assert col.name in actual_columns, f"Missing input column: {col.name}"
+
+    print("Model signature validated successfully.")
+
+
+
+
+
+def test_model_with_incorrect_schema(setup_model_and_scaler):
+    """Test the model with incorrect input schema."""
+    model, scaler = setup_model_and_scaler
+
+    # Create a DataFrame with incorrect schema
+    incorrect_dummy_data = pd.DataFrame({
+        "sepal length (cm)": np.random.uniform(4.3, 7.9, size=5),
+        "petal length (cm)": np.random.uniform(1.0, 6.9, size=5)
     })
 
-    # Scale the data using the loaded scaler
-    scaled_data = scaler.transform(dummy_data)
+    with pytest.raises(ValueError):
+        scaled_data = scaler.transform(incorrect_dummy_data)
+        model.predict(scaled_data)
+    print("Schema validation test passed for incorrect schema.")
 
-    # Validate model signature
-    signature = model.metadata.signature
-    if signature:
-        # Check if inputs match signature
-        expected_inputs = signature.inputs
-        actual_inputs = list(dummy_data.columns)
-        if all(col.name in actual_inputs for col in expected_inputs):
-            print("Input signature matches dummy data.")
-        else:
-            print("Input signature does not match dummy data.")
 
-        # Check if outputs match signature
-        expected_outputs = signature.outputs
-        print("Model signature validated successfully.")
-        print(f"Expected Inputs: {expected_inputs}")
-        print(f"Expected Outputs: {expected_outputs}")
-
-        # Test prediction with scaled data
-        predictions = model.predict(scaled_data)
-        print("Predictions on dummy data:", predictions)
-    else:
-            print("Model signature is not defined.")
 
 if __name__ == "__main__":
-    test_model_signature()
+    pytest.main(["-v"])
