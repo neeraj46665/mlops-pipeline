@@ -1,22 +1,59 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+import mlflow
 import joblib
 import numpy as np
+from mlflow.pyfunc import load_model
+import yaml
+import numpy as np
+import pandas as pd
 
 # Load the trained model and scaler
-MODEL_PATH = "models/iris_model.pkl"
+# MODEL_PATH = "models/iris_model.pkl"
 SCALER_PATH = "models/scaler.pkl"
+
+def load_params():
+    with open('params.yaml', 'r') as f:
+        params = yaml.safe_load(f)
+    return params
+
+def load_production_model():
+    try:
+        # Set the tracking URI to your MLflow server
+        params = load_params()
+        tracking_uri = params["register"]["tracking_uri"]
+        mlflow.set_tracking_uri(tracking_uri)
+
+        # Model name registered in MLflow
+        model_name = params["register"]["model_name"]
+        
+        # Get the latest version of the model in the 'production' stage
+        client = mlflow.tracking.MlflowClient()
+        production_model = client.get_latest_versions(model_name, stages=["Production"])[0]
+        model_version = production_model.version
+
+        # Load the model using MLflow's pyfunc API
+        model_uri = f"models:/{model_name}/{model_version}"
+        model = load_model(model_uri)
+
+        return model
+    except Exception as e:
+        raise RuntimeError(f"Error loading the model from MLflow: {str(e)}")
+
 
 try:
     # Loading model using pickle
-    model = joblib.load(MODEL_PATH)
+    # model = joblib.load(MODEL_PATH)
+    model = load_production_model()
+
     scaler = joblib.load(SCALER_PATH)
 
     # Check if model is a valid scikit-learn model
     if not hasattr(model, "predict"):
         raise RuntimeError("Loaded model is not a valid scikit-learn model.")
-except FileNotFoundError:
-    raise RuntimeError(f"Model or scaler not found at the specified paths.")
+except Exception as e:
+    raise RuntimeError(f"Model loading failed: {str(e)}")
+
 except Exception as e:
     raise RuntimeError(f"Error loading the model or scaler: {str(e)}")
 
@@ -72,4 +109,6 @@ def health_check():
         return {"status": "Healthy", "message": "API and model are operational."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Health check failed: {str(e)}")
+
+
 

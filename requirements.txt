@@ -9,3 +9,4 @@ dvc-azure
 dvc-s3
 pytest
 mlflow
+numpy

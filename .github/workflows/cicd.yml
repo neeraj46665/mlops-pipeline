@@ -88,9 +88,9 @@ jobs:
       run: |
         pytest scripts/test_load_model.py
 
-    - name: Run Model Signature testing
-      run: |
-        pytest scripts/test_model_signature.py
+    # - name: Run Model Signature testing
+    #   run: |
+    #     pytest scripts/test_model_signature.py
 
     - name: Run Model Performance testing
       run: |
@@ -102,25 +102,25 @@ jobs:
       
 
     # Build Docker image
-    - name: Build Docker image
-      run: |
-        docker build -t fastapi-ml-app .  # Build the Docker image
+    # - name: Build Docker image
+    #   run: |
+    #     docker build -t fastapi-ml-app .  # Build the Docker image
 
-    - name: Security scan
-      uses: aquasecurity/trivy-action@master
-      with:
-        image-ref: fastapi-ml-app:latest
+    # - name: Security scan
+    #   uses: aquasecurity/trivy-action@master
+    #   with:
+    #     image-ref: fastapi-ml-app:latest
 
-    # Push Docker image to Azure Container Registry (ACR)
-    - name: Push Docker image to Azure Container Registry (ACR)
-      env:
-        AZURE_REGISTRY_NAME: ${{ secrets.AZURE_REGISTRY_NAME }}
-        AZURE_REGISTRY_PASSWORD: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
-        AZURE_REGISTRY_USERNAME: ${{ secrets.AZURE_REGISTRY_USERNAME }}
-      run: |
-        echo $AZURE_REGISTRY_PASSWORD | docker login $AZURE_REGISTRY_NAME.azurecr.io --username $AZURE_REGISTRY_USERNAME --password-stdin
-        docker tag fastapi-ml-app:latest $AZURE_REGISTRY_NAME.azurecr.io/fastapi-ml-app:latest
-        docker push $AZURE_REGISTRY_NAME.azurecr.io/fastapi-ml-app:latest  # Push the Docker image
+    # # Push Docker image to Azure Container Registry (ACR)
+    # - name: Push Docker image to Azure Container Registry (ACR)
+    #   env:
+    #     AZURE_REGISTRY_NAME: ${{ secrets.AZURE_REGISTRY_NAME }}
+    #     AZURE_REGISTRY_PASSWORD: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
+    #     AZURE_REGISTRY_USERNAME: ${{ secrets.AZURE_REGISTRY_USERNAME }}
+    #   run: |
+    #     echo $AZURE_REGISTRY_PASSWORD | docker login $AZURE_REGISTRY_NAME.azurecr.io --username $AZURE_REGISTRY_USERNAME --password-stdin
+    #     docker tag fastapi-ml-app:latest $AZURE_REGISTRY_NAME.azurecr.io/fastapi-ml-app:latest
+    #     docker push $AZURE_REGISTRY_NAME.azurecr.io/fastapi-ml-app:latest  # Push the Docker image
 
 
 

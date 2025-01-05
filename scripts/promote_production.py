@@ -1,6 +1,10 @@
+import warnings
 import yaml
 import mlflow
 from mlflow.tracking import MlflowClient
+
+# Suppress FutureWarnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 # Load parameters from YAML file
 def load_params():
@@ -39,17 +43,27 @@ def promote_to_production():
     model_name = params["register"]["model_name"]
     stage = params["register"]["production_stage"]
 
-    # Get the latest version of the model
-    latest_version = client.get_registered_model(model_name).latest_versions[0].version
-    print(f"Latest version of model '{model_name}': {latest_version}")
+    # Get the latest version in the "staging" stage
+    latest_version_staging = client.get_latest_versions(model_name, stages=["Staging"])[0].version
+    print(f"Latest version in staging: {latest_version_staging}")
 
-    # Transition the model to production
+    # Archive the current production model
+    prod_versions = client.get_latest_versions(model_name, stages=["Production"])
+    for version in prod_versions:
+        print(f"Archiving production model version {version.version}")
+        client.transition_model_version_stage(
+            name=model_name,
+            version=version.version,
+            stage="Archived"
+        )
+
+    # Promote the new model to production
     client.transition_model_version_stage(
         name=model_name,
-        version=latest_version,
-        stage=stage
+        version=latest_version_staging,
+        stage="Production"
     )
-    print(f"Model '{model_name}' promoted to stage '{stage}'.")
+    print(f"Model version {latest_version_staging} promoted to Production")
 
 # Main flow
 def main():

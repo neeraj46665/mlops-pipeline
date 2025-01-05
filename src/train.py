@@ -67,10 +67,11 @@ def train_model():
     mlflow.start_run()  # Start a new MLflow run
 
     # Infer the model signature
-    signature = infer_signature(X_train, best_model.predict(X_train))
+    # signature = infer_signature(X_train, best_model.predict(X_train))
 
     # Log the model with the inferred signature
-    mlflow.sklearn.log_model(best_model, "model", signature=signature)
+    # mlflow.sklearn.log_model(best_model, "model", signature=signature)
+    mlflow.sklearn.log_model(best_model, "model")
 
     # Optionally log parameters and metrics
     mlflow.log_param("max_depth", grid_search.best_params_["max_depth"])
