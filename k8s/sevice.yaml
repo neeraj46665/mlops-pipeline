@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-ml-app-service
+spec:
+  selector:
+    app: fastapi-ml-app
+  ports:
+    - protocol: TCP
+      port: 80  # Expose port 80 externally
+      targetPort: 8000  # Map to the container's port 8000
+  type: LoadBalancer

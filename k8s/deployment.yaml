@@ -19,6 +19,7 @@ spec:
         image: mlops.azurecr.io/fastapi-ml-app:latest
         ports:
         - containerPort: 8000  # Expose container's port 8000
+          protocol: TCP  # Explicitly specifying the protocol
         readinessProbe:  # Ensure the pod is ready to receive traffic
           httpGet:
             path: /health
@@ -35,18 +36,4 @@ spec:
     type: RollingUpdate  # Rolling update strategy for zero-downtime deployment
     rollingUpdate:
       maxSurge: 1  # Allow 1 extra pod to be created during update
-      maxUnavailable: 1  # Ensure only 1 pod is unavailable during update
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: fastapi-ml-app-service
-spec:
-  selector:
-    app: fastapi-ml-app
-  ports:
-    - protocol: TCP
-      port: 80  # Expose port 80 externally
-      targetPort: 8000  # Map to the container's port 8000
-  type: LoadBalancer
+      maxUnavailable: 0  # Ensure no pods are unavailable during update
